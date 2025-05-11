@@ -8,7 +8,6 @@ autom4te.cache
 compile
 config.guess
 config.h
-config.h.in~
 config.log
 config.status
 config.sub
@@ -17,6 +16,11 @@ depcomp
 libtool
 stamp-h1
 *.o
-xdelta3
 xdelta3decode
 xdelta3regtest
+xdelta3/m4
+xdelta3/xdelta3
+xdelta3/ltmain.sh
+xdelta3/missing
+xdelta3/*.o
+xdelta3/*.lo

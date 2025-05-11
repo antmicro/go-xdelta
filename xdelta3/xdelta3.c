@@ -1,5 +1,6 @@
 /* xdelta3 - delta compression tools and library
    Copyright 2016 Joshua MacDonald
+   Copyright (c) 2024-2025 Antmicro
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -733,7 +734,7 @@ const xd3_sec_type lzma_sec_type =
 };
 #endif
 
-#if XD3_MAIN || PYTHON_MODULE || SWIG_MODULE || NOT_MAIN
+#if !STATIC_LIB && (XD3_MAIN || PYTHON_MODULE || SWIG_MODULE || NOT_MAIN)
 #include "xdelta3-main.h"
 #endif
 
