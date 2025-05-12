@@ -380,7 +380,10 @@ typedef enum {
   XD3_INVALID_INPUT = -17712, /* invalid input/decoder error */
   XD3_NOSECOND    = -17713, /* when secondary compression finds no
 			       improvement. */
-  XD3_UNIMPLEMENTED = -17714  /* currently VCD_TARGET, VCD_CODETABLE */
+  XD3_UNIMPLEMENTED = -17714,  /* currently VCD_TARGET, VCD_CODETABLE */
+#if CGO_INTEGRATION
+  XD3_INVALID_CGO_HANDLE = -17715 /* invalid cgo handle */
+#endif /* CGO_INTEGRATION */
 } xd3_rvalues;
 
 /* special values in config->flags */

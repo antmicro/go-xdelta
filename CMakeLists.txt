@@ -10,7 +10,8 @@ check_type_size("unsigned long"      XD3_SIZEOF_UNSIGNED_LONG)
 check_type_size("unsigned long long" XD3_SIZEOF_UNSIGNED_LONG_LONG)
 
 option(APP
-  "Set to ON to build standalone application instead of static library."
+  "Set to ON to build standalone application instead of static library.
+  CGO_INTEGRATION must be set to OFF when enabling APP."
   OFF
 )
 
@@ -55,7 +56,11 @@ if(BUILD_TESTS)
   set(ENCODER ON CACHE BOOL "" FORCE)
 endif()
 
-# Main target
+# Disallow APP+CGO at once
+if(APP AND CGO_INTEGRATION)
+  message(FATAL_ERROR "CGO_INTEGRATION must be OFF when APP=ON")
+endif()
+
 if(APP)
   add_executable(${PROJECT_NAME})
 else()
@@ -94,6 +99,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     NOT_MAIN=$<NOT:$<BOOL:${APP}>>
     STATIC_LIB=$<NOT:$<BOOL:${APP}>>
     XD3_ENCODER=$<BOOL:${ENCODER}>
+    CGO_INTEGRATION=$<BOOL:${CGO_INTEGRATION}>
     XD3_DEBUG=$<BOOL:${XD3_DEBUG}>
     VCDIFF_TOOLS=$<BOOL:${VCDIFF_TOOLS}>
     SECONDARY_DJW=$<BOOL:${DJW_FGK}>
@@ -106,6 +112,12 @@ if(ENCODER)
   set(XD3_ENCODER_VALUE 1)
 else()
   set(XD3_ENCODER_VALUE 0)
+endif()
+
+if(CGO_INTEGRATION)
+  set(CGO_INTEGRATION_VALUE 1)
+else()
+  set(CGO_INTEGRATION_VALUE 0)
 endif()
 
 configure_file(
@@ -151,23 +163,38 @@ if(BUILD_TESTS)
   )
   FetchContent_MakeAvailable(unity)
 
-  add_executable(test_xd3_c_api
-    xdelta3/c_api/c_api_tests.c
-  )
-  target_include_directories(test_xd3_c_api PRIVATE
-    xdelta3
-  )
-  target_link_libraries(test_xd3_c_api PRIVATE
-    ${PROJECT_NAME}
-    unity
-    LibLZMA::LibLZMA
-    m
-  )
-  add_test(NAME test_xd3_c_api
-    COMMAND test_xd3_c_api
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/xdelta3/c_api
-  )
-  set_tests_properties(test_xd3_c_api PROPERTIES
-    TIMEOUT 300
-  )
+  if(CGO_INTEGRATION)
+    find_program(go_executable go REQUIRED)
+    if(NOT go_executable)
+      message(WARNING "Go executable not found, skipping CGO tests")
+      return()
+    endif()
+    add_test(NAME test_xd3_cgo_api
+      COMMAND ${go_executable} test -v .
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/xdelta3/go_api
+    )
+    set_tests_properties(test_xd3_cgo_api PROPERTIES
+      TIMEOUT 300
+    )
+  else()
+    add_executable(test_xd3_c_api
+      xdelta3/c_api/c_api_tests.c
+    )
+    target_include_directories(test_xd3_c_api PRIVATE
+      xdelta3
+    )
+    target_link_libraries(test_xd3_c_api PRIVATE
+      ${PROJECT_NAME}
+      unity
+      LibLZMA::LibLZMA
+      m
+    )
+    add_test(NAME test_xd3_c_api
+      COMMAND test_xd3_c_api
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/xdelta3/c_api
+    )
+    set_tests_properties(test_xd3_c_api PROPERTIES
+      TIMEOUT 300
+    )
+  endif()
 endif()

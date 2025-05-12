@@ -556,6 +556,9 @@ const char* xd3_strerror (int ret)
     case XD3_INVALID_INPUT: return "XD3_INVALID_INPUT";
     case XD3_NOSECOND: return "XD3_NOSECOND";
     case XD3_UNIMPLEMENTED: return "XD3_UNIMPLEMENTED";
+#if CGO_INTEGRATION
+    case XD3_INVALID_CGO_HANDLE: return "XD3_INVALID_CGO_HANDLE";
+#endif /* CGO_INTEGRATION */
     }
   return NULL;
 }

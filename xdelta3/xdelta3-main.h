@@ -779,6 +779,10 @@ main_file_isopen (main_file *xfile)
 #if XD3_STDIO
   return xfile->file != NULL;
 
+#elif CGO_INTEGRATION
+  // File handling is provided by Go
+  return 1;
+
 #elif XD3_POSIX
   return xfile->file != -1;
 
@@ -790,6 +794,11 @@ main_file_isopen (main_file *xfile)
 int
 main_file_close (main_file *xfile)
 {
+#if CGO_INTEGRATION
+  // File handling is provided by Go
+  return 0;
+#endif
+
   int ret = 0;
 
   if (! main_file_isopen (xfile))
@@ -842,6 +851,11 @@ main_file_cleanup (main_file *xfile)
 int
 main_file_open (main_file *xfile, const char* name, int mode)
 {
+#if CGO_INTEGRATION
+  // File handling is provided by Go
+  return 0;
+#endif
+
   int ret = 0;
 
   xfile->mode = mode;
@@ -1043,6 +1057,8 @@ main_file_read (main_file  *ifile,
       *nread = result;
     }
 
+#elif CGO_INTEGRATION
+  ret = xd3_ReadFromGoStream(buf, size, nread, ifile->goReaderHandle);
 #elif XD3_POSIX
   ret = xd3_posix_io (ifile->file, buf, size, (xd3_posix_func*) &read, nread);
 #elif XD3_WIN32
@@ -1077,6 +1093,10 @@ main_file_write (main_file *ofile, uint8_t *buf, usize_t size, const char *msg)
 
   if (result != size) { ret = get_errno (); }
 
+#elif CGO_INTEGRATION
+  /* xd3_WriteToGoStream returns a proper error code */
+  ret = xd3_WriteToGoStream(buf, size, ofile->goWriterHandle);
+
 #elif XD3_POSIX
   ret = xd3_posix_io (ofile->file, buf, size, (xd3_posix_func*) &write, NULL);
 
@@ -1106,6 +1126,10 @@ main_file_seek (main_file *xfile, xoff_t pos)
 
 #if XD3_STDIO
   if (fseek (xfile->file, pos, SEEK_SET) != 0) { ret = get_errno (); }
+
+#elif CGO_INTEGRATION
+  /* xd3_SeekGoStream returns a proper error code */
+  ret = xd3_SeekGoStream(pos, 0 /* SEEK_SET */, xfile->goReaderHandle);
 
 #elif XD3_POSIX
   if ((xoff_t) lseek (xfile->file, pos, SEEK_SET) != pos)

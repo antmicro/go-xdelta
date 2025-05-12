@@ -124,6 +124,10 @@ struct _main_file
   int                 size_known;    /* Set by main_set_souze */
   xoff_t              source_position;  /* for avoiding seek in getblk_func */
   int                 seek_failed;   /* after seek fails once, try FIFO */
+  uintptr_t goReaderHandle;          /* cgo Handle to a Go reading interface
+					(e.g., io.Reader object) */
+  uintptr_t goWriterHandle;          /* cgo Handle to Go writing interface
+					(e.g., io.Writer object) */
 };
 
 #ifdef _WIN32

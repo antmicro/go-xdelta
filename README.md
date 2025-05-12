@@ -13,10 +13,23 @@ The fork introduces two new functions:
 
 These functions are defined in `c_api/xdelta3-api.h` and implemented in `c_api/xdelta3-api.c`.
 
+## CGO integration
+
+This fork adds support for CGO integration, enabling xdelta3 usage in Go applications.
+
+### Key features
+
+- **CMake Option**: to enable it, compile with `-DCGO_INTEGRATION=ON` (default: `OFF`).
+- **Go API**: run `import "github.com/antmicro/go-xdelta"` to use the `Xd3Encode` and `Xd3Decode` functions in your Go project.
+- **Stream-based I/O**: the Go API supports any Go stream data, using interfaces like `io.Reader` and `io.Writer`.
+
+The implementation of the Go API can be found in the `go_api/` directory.
+
 ## Requirements
 
 - **liblzma-dev**: required for LZMA support when `LZMA=ON`. Install version 5.2.1 or higher.
 - **cmake**: required for building. Install version 3.1.0 or higher.
+- **go**: required for CGO integration and tests when `CGO_INTEGRATION=ON`.
 
 ## Build instructions
 
@@ -41,11 +54,12 @@ You can customize the build by adjusting options in `CMakeLists.txt` or passing 
 - `-DAPP=ON`: build xdelta3 as a standalone application (default: `OFF`, builds as a static library).
 - `-DENCODER=OFF`: set to OFF to build only the decoder, without the encoder. (default: `ON`).
 - `-DLZMA=OFF`: disable LZMA secondary compression (default: `ON`, requires LibLZMA 5.2.1+).
+- `-DCGO_INTEGRATION=OFF`: exclude C-GO bridging code from the build (default: `OFF`).
 - `-DBUILD_TESTS=ON`: enable unit tests (default: `OFF`).
 
 ## Unit tests
 
-Unit tests utilize the Unity framework. To build and run them:
+Unit tests utilize the Unity framework for C tests and Go's testing framework for CGO tests. To build and run them:
 1. Enable tests with `-DBUILD_TESTS=ON` in CMake.
 2. Build the project:
    ```bash
@@ -55,7 +69,7 @@ Unit tests utilize the Unity framework. To build and run them:
    ```bash
    ctest
    ```
-The tests validate `xd3_encode` and `xd3_decode` using random data and file comparisons.
+The tests validate `xd3_encode` and `xd3_decode` using random data and file comparisons. When `CGO_INTEGRATION=ON`, additional Go-based tests validate the CGO API.
 
 ## Notes
 
