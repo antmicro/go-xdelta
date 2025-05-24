@@ -1,0 +1,45 @@
+image: debian:bookworm
+
+variables:
+  DEBIAN_FRONTEND: noninteractive
+
+stages:
+  - build
+  - test
+
+.common_setup:
+  before_script:
+    - apt-get update
+    - apt-get install -y cmake build-essential liblzma-dev golang git
+
+build_lib:
+  extends: .common_setup
+  stage: build
+  script:
+    - cmake -B build/ -DENCODER=ON
+    - cmake --build build/
+
+build_app:
+  extends: .common_setup
+  stage: build
+  script:
+    - cmake -B build/ -DAPP=ON -DENCODER=ON -DCGO_INTEGRATION=OFF
+    - cmake --build build/
+
+test_c_api:
+  extends: .common_setup
+  stage: test
+  script:
+    - cmake -B build/ -DBUILD_TESTS=ON -DCGO_INTEGRATION=OFF
+    - cmake --build build/
+    - cmake --install build/
+    - ctest --output-on-failure --test-dir build/
+
+test_cgo_api:
+  extends: .common_setup
+  stage: test
+  script:
+    - cmake -B build/ -DBUILD_TESTS=ON -DCGO_INTEGRATION=ON
+    - cmake --build build/
+    - cmake --install build/
+    - ctest --output-on-failure --test-dir build/
