@@ -20,7 +20,7 @@ This fork adds support for CGO integration, enabling xdelta3 usage in Go applica
 ### Key features
 
 - **CMake Option**: to enable it, compile with `-DCGO_INTEGRATION=ON` (default: `OFF`).
-- **Go API**: run `import "github.com/antmicro/go-xdelta"` to use the `Xd3Encode` and `Xd3Decode` functions in your Go project.
+- **Go API**: run `import "github.com/antmicro/go-xdelta/xdelta3/go_api"` to use the `xdelta.Xd3Encode` and `xdelta.Xd3Decode` functions in your Go project.
 - **Stream-based I/O**: the Go API supports any Go stream data, using interfaces like `io.Reader` and `io.Writer`.
 
 The implementation of the Go API can be found in the `go_api/` directory.
